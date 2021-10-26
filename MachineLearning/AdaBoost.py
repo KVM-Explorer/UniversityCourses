@@ -6,6 +6,7 @@ class Adaboost:
         self.weakClassifierArray = []
         self.iterations = iterations
         self.stepNumber = step_number
+
     def classify(self,data,feature,threshold,position):
         result = ones((shape(data)[0],1))
         if position == 'upper' :
@@ -78,7 +79,7 @@ class Adaboost:
     def predict(self,data):
         data_matrix = mat(data)
         sample_number = shape(data_matrix)[0]
-        classifier_result = mat(zeros(sample_number,1))
+        classifier_result = mat(zeros((sample_number,1)))
 
         for i in range(len(self.weakClassifierArray)):
             predict_result = self.classify(data_matrix,
@@ -90,6 +91,7 @@ class Adaboost:
 
     def load(self,model_parameter):
         self.weakClassifierArray = model_parameter
+
     def save(self):
         return self.weakClassifierArray
 
