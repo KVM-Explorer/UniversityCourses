@@ -31,7 +31,7 @@ def loadDataSet(fileName):  # general function to parse tab -delimited floats
         labelMat.append(float(curLine[-1]))
     return dataMat, labelMat
 
-
+# 作为预测器使用
 # 特征：dimen，分类的阈值是 threshVal,分类对应的大小值是threshIneq
 def stumpClassify(dataMatrix, dimen, threshVal, threshIneq):  # just classify the data
     retArray = ones((shape(dataMatrix)[0], 1))
@@ -50,11 +50,11 @@ def stumpClassify(dataMatrix, dimen, threshVal, threshIneq):  # just classify th
 # 对大于，小于进行切换
 
 def buildStump(dataArr, classLabels, D):
-    dataMatrix = mat(dataArr);
+    dataMatrix = mat(dataArr)
     labelMat = mat(classLabels).T
     m, n = shape(dataMatrix)
-    numSteps = 10.0;
-    bestStump = {};
+    numSteps = 10.0
+    bestStump = {}
     bestClasEst = mat(zeros((m, 1)))  # numSteps作为迭代这个单层决策树的步长
     minError = inf  # init error sum, to +infinity
     for i in range(n):  # loop over all dimensions
@@ -81,33 +81,42 @@ def buildStump(dataArr, classLabels, D):
 
 # 基于单层决策树的AdaBoost的训练过程
 # numIt 循环次数，表示构造40个单层决策树
+# 数据集 标签 弱分类器个数
 def adaBoostTrainDS(dataArr, classLabels, numIt=40):
     weakClassArr = []
-    m = shape(dataArr)[0]
-    D = mat(ones((m, 1)) / m)  # init D to all equal
+    m = shape(dataArr)[0] # 样本个数
+    D = mat(ones((m, 1)) / m)  # 初始化各样本的权值
     aggClassEst = mat(zeros((m, 1)))
     for i in range(numIt):
-        bestStump, error, classEst = buildStump(dataArr, classLabels, D)  # build Stump
+        # bestStump 最佳弱分类器划分节点（包含对应的维度、阈值、）error 弱分类器分类错误率 classEst 弱分类器对目标类别的预测
+        # dataArr 样本数据 classLabels 样本标签 D样本权重
+        bestStump, error, classEst = buildStump(dataArr, classLabels, D)
         # print "D:",D.T
+        # alpha 第k个弱分类器的权重系数
         alpha = float(
             0.5 * log((1.0 - error) / max(error, 1e-16)))  # calc alpha, throw in max(error,eps) to account for error=0
         bestStump['alpha'] = alpha
+        # 添加到弱学习器组
         weakClassArr.append(bestStump)  # store Stump Params in Array
         # print "classEst: ",classEst.T
+        # 计算损失函数指数部分
         expon = multiply(-1 * alpha * mat(classLabels).T, classEst)  # exponent for D calc, getting messy
         D = multiply(D, exp(expon))  # Calc New D for next iteration
+        # 各样本系数进行归一化处理
         D = D / D.sum()
         # calc training error of all classifiers, if this is 0 quit for loop early (use break)
+        # aggclassEst 强分类器的结果
         aggClassEst += alpha * classEst
         # print "aggClassEst: ",aggClassEst.T
+        # 强分类器结果和标签进行对比并计算错误率
         aggErrors = multiply(sign(aggClassEst) != mat(classLabels).T, ones((m, 1)))  # 这里还用到一个sign函数，主要是将概率可以映射到-1,1的类型
         errorRate = aggErrors.sum() / m
-        print
-        "total error: ", errorRate
+        print("total error: ", errorRate)
         if errorRate == 0.0: break
     return weakClassArr, aggClassEst
 
 
+# 对待分类的原始数据进行分类
 def adaClassify(datToClass, classifierArr):
     dataMatrix = mat(datToClass)  # do stuff similar to last aggClassEst in adaBoostTrainDS
     m = shape(dataMatrix)[0]
@@ -122,6 +131,7 @@ def adaClassify(datToClass, classifierArr):
     return sign(aggClassEst)
 
 
+# 绘制ROC曲线
 def plotROC(predStrengths, classLabels):
     import matplotlib.pyplot as plt
     cur = (1.0, 1.0)  # cursor
