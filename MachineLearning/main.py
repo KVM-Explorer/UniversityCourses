@@ -1,4 +1,4 @@
-import AdaBoost
+import adaboost
 import classifier
 import numpy as np
 
@@ -39,7 +39,7 @@ def loadMuitiData():
 
 
 def adaboost_test():
-    demo = AdaBoost.Adaboost()
+    demo = adaboost.Adaboost()
     data, labels = loadSimpData()
     print(demo.train(data, labels))
     print(demo.weakClassifierArray)

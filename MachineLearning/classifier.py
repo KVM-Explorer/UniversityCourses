@@ -1,6 +1,6 @@
 import random
 
-import AdaBoost
+import adaboost
 from numpy import *
 
 
@@ -45,7 +45,7 @@ class MultiClassifier:
                 labels = labels[new_index]
                 labels = mat(labels).T
                 # 开始训练
-                single_classifier = AdaBoost.Adaboost()
+                single_classifier = adaboost.Adaboost()
 
                 single_classifier.train(data,labels)
                 mapping['classifier'] = single_classifier.save()
@@ -104,7 +104,7 @@ class MultiClassifier:
 
         for i in range(self.classes):
             for j in range(i):
-                classifier = AdaBoost.Adaboost()
+                classifier = adaboost.Adaboost()
                 classifier.load(self.multiClassifierArray[index]['classifier'])
                 result = classifier.predict(data)
                 result = array(result)[0][0]
