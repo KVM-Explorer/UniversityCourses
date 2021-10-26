@@ -54,5 +54,5 @@ def multiClassifier_test():
 
 
 if __name__ == "__main__":
-    # adaboost_test()
+    adaboost_test()
     multiClassifier_test()

@@ -3,11 +3,24 @@ from numpy import *
 class Adaboost:
 
     def __init__(self, iterations = 40, step_number = 10):
+        '''
+        类的构造和初始化成员
+        :param iterations:
+        :param step_number:
+        '''
         self.weakClassifierArray = []
         self.iterations = iterations
         self.stepNumber = step_number
 
     def classify(self,data,feature,threshold,position):
+        '''
+        分类器针对该特征进行决策，决定自身针对当前阈值的结果
+        :param data: 多样本
+        :param feature: 指定的特征
+        :param threshold: 阈值
+        :param position: 分类结果
+        :return:
+        '''
         result = ones((shape(data)[0],1))
         if position == 'upper' :
             result[ data[:,feature] <= threshold ] = -1.0
@@ -16,6 +29,12 @@ class Adaboost:
         return result
 
     def train(self,data,labels):
+        '''
+        训练一个adaboost强分类器，训练参数保存在类成员
+        :param data: 多样本数据
+        :param labels: 多标签数据
+        :return: 针对训练集在模型训练后的输出预测结果
+        '''
         sample_number = shape(data)[0]
         sample_weight = mat(ones((sample_number,1))/sample_number)
         classifier_result = mat(zeros((sample_number,1)))
@@ -46,6 +65,13 @@ class Adaboost:
         return classifier_result
 
     def buildClassifier(self,data,labels,sample_weight):
+        '''
+        构建弱分类器
+        :param data: 多样本数据
+        :param labels: 多标签数据
+        :param sample_weight: 样本的区中
+        :return: 弱分类器参数，弱分类器误差率，弱分类器分类结果
+        '''
         data_matrix = mat(data)
         label_matrix = mat(labels).T
         sample_number , sample_feature = shape(data_matrix)
@@ -77,6 +103,11 @@ class Adaboost:
 
 
     def predict(self,data):
+        '''
+        针对输入的单样本作出预测
+        :param data: 单个样本的特征分量
+        :return: {-1,1}
+        '''
         data_matrix = mat(data)
         sample_number = shape(data_matrix)[0]
         classifier_result = mat(zeros((sample_number,1)))
@@ -90,8 +121,17 @@ class Adaboost:
         return sign(classifier_result)
 
     def load(self,model_parameter):
+        '''
+        加载参数构造模型
+        :param model_parameter: 模型参数
+        :return:
+        '''
         self.weakClassifierArray = model_parameter
 
     def save(self):
+        '''
+        保存adaboost参数
+        :return: 参数
+        '''
         return self.weakClassifierArray
 

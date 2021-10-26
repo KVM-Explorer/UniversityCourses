@@ -7,11 +7,20 @@ from numpy import *
 class MultiClassifier:
 
     def __init__(self,labels):
+        '''
+        构造类，初始化成员
+        :param labels: 数据标签需保持和训练集和测试集对应
+        '''
         self.multiClassifierArray = []
         self.labels = labels
         self.classes = len(self.labels)
     # 按类别输入数据
     def train(self, origin_data):
+        '''
+        针对输入数据按照标签进行采用adaboost进行多分类训练
+        :param origin_data: 以字典的形式进行存储键值分别对应类别和该类别的数据集，数据集包含多个样本每个样本以特征分量进行存储构建一个矩阵
+        :return: 返回训练后对于训练数据的错误率
+        '''
         for i in range(self.classes):
             for j in range(i):
                 # 建立映射关系
@@ -81,6 +90,11 @@ class MultiClassifier:
 
 
     def predict(self, data):
+        '''
+        对输入数据进行预测
+        :param data: 一个样本的各特征分量
+        :return: 各个类别的概率
+        '''
         test_data = 0
         index = 0
 
@@ -102,9 +116,18 @@ class MultiClassifier:
         return all_result
 
     def load(self,classifier,labels):
+        '''
+        加载模型参数
+        :param classifier: 分类器参数
+        :param labels: 标签参数
+        '''
         self.multiClassifierArray = classifier
         self.labels = labels
         self.classes = len(labels)
 
     def save(self):
+        '''
+        保存当前模型的参数
+        :return: 输出模型参数和标签列别
+        '''
         return self.multiClassifierArray,self.labels
