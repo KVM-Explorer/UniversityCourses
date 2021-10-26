@@ -88,4 +88,8 @@ class Adaboost:
             classifier_result += self.weakClassifierArray[i]['alpha'] * predict_result
         return sign(classifier_result)
 
+    def load(self,model_parameter):
+        self.weakClassifierArray = model_parameter
+    def save(self):
+        return self.weakClassifierArray
 
