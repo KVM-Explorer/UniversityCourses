@@ -5,8 +5,8 @@ class Adaboost:
     def __init__(self, iterations = 40, step_number = 10):
         '''
         类的构造和初始化成员
-        :param iterations:
-        :param step_number:
+        :param iterations: 构造的弱分类器个数
+        :param step_number: 弱分类器阈值划分的精细程度
         '''
         self.weakClassifierArray = []
         self.iterations = iterations
