@@ -6,14 +6,19 @@ from numpy import *
 
 class MultiClassifier:
 
-    def __init__(self,labels):
+    def __init__(self,labels,num = 40,step =10):
         '''
         构造类，初始化成员
         :param labels: 数据标签需保持和训练集和测试集对应
+        :param num: 单个Adaboost弱分类器个数
+        :param step: 单个Adaboost弱分类器精细程度
         '''
         self.multiClassifierArray = []
         self.labels = labels
         self.classes = len(self.labels)
+        self.num = num
+        self.step = step
+
     # 按类别输入数据
     def train(self, origin_data):
         '''
@@ -21,6 +26,7 @@ class MultiClassifier:
         :param origin_data: 以字典的形式进行存储键值分别对应类别和该类别的数据集，数据集包含多个样本每个样本以特征分量进行存储构建一个矩阵
         :return: 返回训练后对于训练数据的错误率
         '''
+        print("====================Start Training====================")
         for i in range(self.classes):
             for j in range(i):
                 # 建立映射关系
@@ -45,7 +51,7 @@ class MultiClassifier:
                 labels = labels[new_index]
                 labels = mat(labels).T
                 # 开始训练
-                single_classifier = adaboost.Adaboost()
+                single_classifier = adaboost.Adaboost(self.num,self.step)
 
                 single_classifier.train(data,labels)
                 mapping['classifier'] = single_classifier.save()
@@ -80,11 +86,11 @@ class MultiClassifier:
 
             # print(labels[i] , label)
             id = int(labels[i])
-            print("result: ",result, " labels: ",self.labels[id])
+            # print("result: ",result, " labels: ",self.labels[id])
             if label != self.labels[id] : total_error = total_error + 1
 
         error_rate = total_error / shape(data)[0]
-
+        print("====================End Traing====================")
         return error_rate
 
 
@@ -114,6 +120,9 @@ class MultiClassifier:
         for classes in all_result :
             all_result[classes] /=(self.classes*(self.classes-1)/2)
         return all_result
+
+    def softmax(self,result):
+        return max(result,key=result.get)
 
     def load(self,classifier,labels):
         '''
