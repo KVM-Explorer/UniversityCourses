@@ -15,17 +15,101 @@
 为实现上述Adaboost的特征我们采用以下方式实现：
 
 1. 为实现对错误样本的关注我们赋予样本不同的权值以支持并记为$W_i$
-2. 为实现对错误程度的量化我们记错误率为E
-3. 对分类器赋予不同的权值以支持对表现优秀的分类的关注并记为$D_i$
-4. 弱分类器的联合调用，我们采取加权的方式进行整合
+2. 为实现对错误程度的量化我们记错误率为$E$
+3. 对第k个分类器$G_k$赋予权值以支持对表现优秀的分类的关注并记权值为$D_i$
+4. 弱分类器的联合调用，我们采取加权求和的方式进行整合
 
-对于每个弱分类器我们我们怎样实现上述过程呢？首先可以确定的是输入和输出，输入带权样本集X及对应标签Y，输出错误率E和输出当前弱分类器的预测结果
+#### 优化损失函数
+
+要真正理解上述问题我们首先要从Adaboost损失优化函数说起
+
+由于Adaboost是一个个弱分类器逐轮训练并加权的强分类器对于前k-1轮产生的弱分类器我们有
 $$
-E = P(X\neq Y) \\
+f_{k-1}(x) = \Sigma^{k-1}_{1} D_iG_i(x)
+$$
+当第k轮产生弱分类器$G_k$ 我们有更新Adaboost强分类器公式为
+$$
+f_k(x) = \Sigma^{k}_{1}D_iG_i(x)
+$$
+
+由此我们可以得到Adaboost分类器的更新公式
+$$
+f_k(x)  =  f_{k-1}(x) + D_kG_k(x)
 $$
 
 
- 
+对于Adaboost而言，我们有其指数形式的损失函数定义为
+$$
+loss = \Sigma^{n}_{i=1} e^{-y_i f_k(x)}
+$$
+
+
+其中，$y_i$代表标签值，$f_k(x)$代表我们的预测值， 在此情况下当两者相反我们当两者相悖我们的损失>1 ，当两者相同我们会存在一个较小的损失,进而我们的问题转化为一个最优化问题，即
+$$
+\begin{align}
+
+loss_{min} &= arg \ min_{D,G}f(x) \\
+
+&= arg\ min_{D,G} \Sigma e^{-y_if_k(x)}  \\
+
+&= arg\ min_{D,G} \Sigma e^{-y_i(f_{k-1}(x)+D_kG_k(x)} \\
+\end{align}
+$$
+其中对于$e^{-y_if_k-1(x)}$ 由于这部分仅和迭代有关和我们待求参数无关所以我们可以提取出来记为$t_i$ ，所以现在公式变成了
+$$
+\begin{align}
+loss_{min} &= arg \min_{D,G} \Sigma^{n}_{i=1} t_i e^{-D_kG_k(x)}
+\end{align}
+$$
+由于是一个二分类问题我们有标签集{1,-1}，进而我们对于G(x)可将上公式变换为
+$$
+\begin{align}
+\Sigma^n_{i=1} t_ie^{-D_kG_k(x)} &= \Sigma_{G(x_i)= y_i}t_ie^{-D_k} + \Sigma_{G(x_i)\neq y_i}t_i e^{D_k}	\\
+& = e^{-D_k}\Sigma_{G_k(x)=y_i} t_i + e^{-D_k} \Sigma_{G_k\neq y_i}t_i - e^{-D_k}\Sigma_{G_k(x)\neq y_i} + e^{D_k} \Sigma_{G_k(x)=y_i} t_i \\
+& = (e^{D_k} - e^{-D_k})\Sigma^{n}_{i=1} {t_{i}I(G_k(x)\neq y_i)} + e^{-D_k}\Sigma^{N}_{i=1}{t_i} \\
+\end{align}
+$$
+
+
+进而我们可得$G_k(x)$的表达式
+$$
+G_k(x) = arg \ min \Sigma^{n}_{i=1}{t_iI(G_k(x)\neq y_i)}
+$$
+对(12)式求导可得,有
+$$
+\\
+(e^{D_k} +e^{-D_k})\Sigma^n_{i=1} {t_i I(G_k(x)\neq y_i)} - e^{-D_k} \Sigma t_i = 0 \\
+$$
+
+得到关于$D_k$方程
+$$
+(e^{D_k} +e ^{-D_k}) E_k - e^{-D_k} = 0 \\
+
+D_k = \frac{1}{2} log\frac{1-E_k}{E_k}
+其中，E_k = \frac{\Sigma^{n}_{i=1} t_i I(G_k(x)\neq y_i)}{\Sigma^{n}_{i=1} t_i}  \\
+$$
+
+#### 弱分类器
+
+对于每个弱分类器我们怎样实现上述过程呢？首先对于第k个弱分类器$G_k$可以确定的是输入和输出，输入带权样本集X及对应标签集Y，输出错误率$E_k$和输出当前弱分类器的预测结果I,因而对于错误率我们有
+$$
+E_k=P(G_k(x)\neq y) = \Sigma^{n}_{i=1}{W_i*I(G_k(x)\neq y)} \\
+$$
+
+其中，W_i 表示第i个样本的权重，I表示当前分类器的预测结果
+
+进一步Adaboost针对不同的弱分类器赋予不同的权重，在此我们可以这样理解，Adaboost算法希望表现效果更好的弱分类器在最终总结果中占据的话语权更多，而表现更差的弱分类器所占权重相对较小，这也非常符合我们的直觉，进一步根据其损失函数的优化我们可以得到对于第k个弱分类器它所占有的权重为
+$$
+D_k = \frac{1}{2}log\frac{1-E_k}{E_k}
+$$
+接下来在当前状态下，对于下一个弱分类器而言我们如何计算他的输入带权样本对应的权重呢？
+
+$$
+W_{(k+1)i} = \frac{W_{ki}}{Z_k}e^{-D_k y_i G_k(x_i)} 
+其中，Z_k = \Sigma^{n}_{i=1}W_{ki}e^{-D y_iG_k(x_i)}
+$$
+
+
 
 ### 多分类
 
@@ -42,15 +126,57 @@ $$
 
 ### Adaboost算法
 
+输入为样本$\{ (x_1,y_1) (x_2,y_2) (x_3,y_3) ...(x_n,y_n)\}$
 
+1. 初始化训练样本的权重为 $W_{1i} = 1/n$
+
+2. for  k = 1,2,3...,m 构造的弱分类器
+	1. 对于第i个弱分类器我们使用权重为$W_{k}$的样本进行训练
+	
+	2. 计算$G_k$ 的分类误差率
+	   $$
+	   E_k=P(G_k(x)\neq y) = \Sigma^{n}_{i=1}{W_i*I(G_k(x)\neq y)}
+	   $$
+	
+	3. 计算弱分类在强分类器的权重系数
+	   $$
+	   D_k = \frac{1}{2}log\frac{1-E_k}{E_k}
+	   $$
+	
+	4. 计算样本在当前分类情况下各样本所应该具有的权值
+	   $$
+	   W_{(k+1)i} = \frac{W_{ki}}{Z_k}e^{-D_k y_i G_k(x_i)} 
+	   其中，Z_k = \Sigma^{n}_{i=1}W_{ki}e^{-D y_iG_k(x_i)}
+	   $$
+	
+3.  构建最终的强分类器
+   $$
+   f(x) = \Sigma^{m}_{k=1} D_k G_k(x)
+   $$
+   
 
 ### 单层决策树算法
+
+输入为样本$\{ (x_1,y_1),(x_2,y_2),...,(x_n,y_n)\} $  及其对应的权重W
+
+for 枚举各个维度代表的特征分量
+	获得当前特征分量的最大最小值
+	根据两最值构建划分区间并根据参数设置划分步长
+	for 根据步长枚举当前阈值threshold
+		for 枚举第一类别和和threshold的关系
+            if 特征大于threshold 
+                根据threshold和当前类别关系判断类别
+            else 
+                根据threshold和当前类别关系判断类别
+            计算当前划分的正确率= $\Sigma $样本权重×正确样本
+            if 优于最佳值
+                保存当前的阈值，维度和预测结果
 
 
 
 ## 使用需求
 
-- numpy 库
+- numpy 库 CPU 运算
 
 
 ## 使用
@@ -70,4 +196,22 @@ import adaboost
 4. 训练后，你可以调用对象的**predict** 函数对自己的数据集进行预测
 
 ### 多元分类
+
+## Todo
+
+- 更新库采用GPU库加速运算
+  - cupy
+  - MXNET
+
+你好，这里的确写的有些简单，是这样的：$$\begin{align}  \sum\limits_{i=1}^mw_{ki}^{'}exp(-y_i\alpha G(x_i)) &=  \sum\limits_{y_i =G_k(x_i)}w_{ki}^{'}e^{-\alpha} +  \sum\limits_{y_i   \ne G_k(x_i)}w_{ki}^{'}e^{\alpha}  \\& = (e^{\alpha} -  e^{-\alpha})\sum\limits_{i=1}^mw_{ki}^{'}I(y_i \ne G_k(x_i)) +   e^{-\alpha}\sum\limits_{i=1}^mw_{ki}^{'}   \end{align}$$
+
+从1式到2式仅仅是把1式右边的第一部分看做总的减去$y_i \ne G_k(x_i)$的部分。
+
+现在我们对$\alpha$求导并令其导数为0，得到：$$ (e^{\alpha} + e^{-\alpha})\sum\limits_{i=1}^mw_{ki}^{'}I(y_i \ne  G_k(x_i)) -  e^{-\alpha}\sum\limits_{i=1}^mw_{ki}^{'} = 0 $$
+
+注意到：$$e_k = \frac{\sum\limits_{i=1}^{m}w_{ki}^{’}I(y_i \neq G(x_i))}{\sum\limits_{i=1}^{m}w_{ki}^{’}}$$
+
+将$e_k$的表达式带入上面导数为0 的表达式，我们得到：$$(e^{\alpha} + e^{-\alpha})e_k - e^{-\alpha} = 0 $$
+
+求解这个式子，我们就得到文中说的$\alpha$的最优解$\alpha_k$了。
 

@@ -1,9 +1,8 @@
-import minpy.numpy
-
 import adaboost
 import classifier
 import numpy as np
 import random
+import time
 import os
 
 
@@ -87,28 +86,73 @@ def loadFileData(path, partition=0.8):
                 train[label].append(vector)
             else:
                 valid[label].append(vector)
-        print("Data: ",len(origin_data)," Train: ",numpy.shape(train[label])," Valid: ",numpy.shape(valid[label]))
+        print("Data: ", len(origin_data), " Train: ", np.shape(train[label]), " Valid: ", np.shape(valid[label]))
     print("====================End Loading====================")
     return train, valid, labels
 
-
-if __name__ == "__main__":
-    # adaboost_test()
-    # multiClassifier_test()
-    train_data_filename = "/home/lightning/Downloads/qq-files/1158423912/file_recv/tz/dataset"
-    train_data, valid_data, labels = loadFileData(train_data_filename,0.8)
-    demo = classifier.MultiClassifier(labels,80,100)
-    result1 = demo.train(train_data)
-    print("训练集上错误率:" ,result1)
-    num = 0
-    error =0
+def diffTopicTest(data,labels,model,target):
+    num = len(data[target])
+    error = 0
+    count = 0
+    right = 0
     print("====================Start Valid====================")
+    print(f"target:{target}")
     for label in labels:
-        for sample in valid_data[label] :
-            num = num +1
+        if label !=target :continue
+        for sample in data[label]:
+            count = count + 1
+            # if(count%100==0) :print(f"label: {label}count:{count } total:{num} error:{error}")
+            result = model.predict(sample)
+            predict_result = model.softmax(result)
+            print(predict_result)
+            if predict_result != target and target == label : error =error +1
+            if predict_result == target and label != target :
+                error = error +1
+                num = num + 1
+            if predict_result == target and label == target : right  = right +1
+
+    error_rate = (error) /num
+    print(error, num,len(data[target]))
+    right_rate = right / len(data[target])
+    print("校验集是错误率：", round(error_rate,2) )
+    print("校验集正确率:", round(right_rate,2))
+    print("====================End Valid====================")
+
+
+def validTest(valid_data, demo):
+    num = 0
+    error = 0
+    print("====================Start Valid====================")
+    for label in demo.labels:
+        for sample in valid_data[label]:
+            num = num + 1
             result2 = demo.predict(sample)
             predict_result = demo.softmax(result2)
-            if(predict_result != label) : error = error + 1
-    correct_rate = (num-error)/num
-    print("校验集上正确率: ",round(correct_rate,2),"%")
+            if (predict_result != label): error = error + 1
+    correct_rate = (num - error) / num
+    print("校验集上正确率: ", round(correct_rate, 2))
     print("====================End Valid====================")
+
+if __name__ == "__main__":
+    start_time = time.time()
+    # adaboost_test()
+    # multiClassifier_test()
+    # train_data_filename = "/home/lightning/Downloads/qq-files/1158423912/file_recv/tz/dataset"
+    # train_data, valid_data, labels = loadFileData(train_data_filename, 0.9)
+    # demo = classifier.MultiClassifier(labels, 400, 10)
+    # result1 = demo.train(train_data)
+    # print("训练集上错误率:", result1)
+    # validTest(valid_data,labels,demo)
+    # end_time = time.time()
+    # print("Total cost time: ", end_time - start_time, 's')
+    # demo.save("./model")
+
+
+    train_data_filename = "/home/lightning/Downloads/qq-files/1158423912/file_recv/tz/dataset"
+    train_data, valid_data, labels = loadFileData(train_data_filename, 0)
+    # train_data_filename = "/home/lightning/Downloads/qq-files/1158423912/file_recv/xl_tz/dataset/经管/"
+    # train_data, valid_data, labels = loadFileData(train_data_filename, 0)
+    demo = classifier.MultiClassifier([])
+    demo.loadFile("./model/adaboost.model","./model/adaboost.labels")
+    # diffTopicTest(valid_data,labels,demo,labels[2])
+    validTest(valid_data,demo)

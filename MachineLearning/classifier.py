@@ -133,10 +133,32 @@ class MultiClassifier:
         self.multiClassifierArray = classifier
         self.labels = labels
         self.classes = len(labels)
+    def loadFile(self,modelname,labelsname):
+        '''
+        读取文件中保存的模型
+        :param filename:
+        :return:
+        '''
+        with open(modelname) as file:
+            content = file.readlines()
+            classifier = eval(content[0])
+        with open(labelsname) as file:
+            content = file.readlines()
+            labels = eval(content[0])
+        # self.load(clas)
+        self.load(classifier,labels)
 
-    def save(self):
+        return self
+    def save(self,filename):
         '''
         保存当前模型的参数
         :return: 输出模型参数和标签列别
         '''
+
+        # model
+        with  open(filename+"/./adaboost.model","w+") as file:
+            print(self.multiClassifierArray,file= file)
+        # label
+        with open(filename+"/./adaboost.labels","w+") as file :
+            print(self.labels,file=file)
         return self.multiClassifierArray,self.labels
