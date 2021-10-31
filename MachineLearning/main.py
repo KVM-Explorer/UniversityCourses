@@ -90,7 +90,8 @@ def loadFileData(path, partition=0.8):
     print("====================End Loading====================")
     return train, valid, labels
 
-def diffTopicTest(data,labels,model,target):
+
+def diffTopicTest(data, labels, model, target):
     num = len(data[target])
     error = 0
     count = 0
@@ -98,24 +99,24 @@ def diffTopicTest(data,labels,model,target):
     print("====================Start Valid====================")
     print(f"target:{target}")
     for label in labels:
-        if label !=target :continue
+        if label != target: continue
         for sample in data[label]:
             count = count + 1
             # if(count%100==0) :print(f"label: {label}count:{count } total:{num} error:{error}")
             result = model.predict(sample)
             predict_result = model.softmax(result)
-            print(predict_result)
-            if predict_result != target and target == label : error =error +1
-            if predict_result == target and label != target :
-                error = error +1
+            # print(predict_result)
+            if predict_result != target and target == label: error = error + 1
+            if predict_result == target and label != target:
+                error = error + 1
                 num = num + 1
-            if predict_result == target and label == target : right  = right +1
+            if predict_result == target and label == target: right = right + 1
 
-    error_rate = (error) /num
-    print(error, num,len(data[target]))
+    error_rate = (error) / num
+    print(error, num, len(data[target]))
     right_rate = right / len(data[target])
-    print("校验集是错误率：", round(error_rate,2) )
-    print("校验集正确率:", round(right_rate,2))
+    print("校验集是错误率：", round(error_rate, 2))
+    print("校验集正确率:", round(right_rate, 2))
     print("====================End Valid====================")
 
 
@@ -129,30 +130,75 @@ def validTest(valid_data, demo):
             result2 = demo.predict(sample)
             predict_result = demo.softmax(result2)
             if (predict_result != label): error = error + 1
+
     correct_rate = (num - error) / num
     print("校验集上正确率: ", round(correct_rate, 2))
     print("====================End Valid====================")
 
+
+def multiValidTest(valid_data, demo, target):
+    num = len(valid_data[target])
+    error = 0
+    right = 0
+    sum = 0
+    print("====================Start Valid====================")
+    for i in range(len(valid_data[target])):
+        total_property = {}
+        flag = False
+        max_value = 0
+        key = ""
+        count = 0
+        for label in labels:
+
+            result1 = demo.predict(valid_data[label][i])
+            # print(f"labes:{label}",result1)
+            for k in result1.keys():
+                if result1[k] > max_value:
+                    max_value = result1[k]
+                    key = k
+                    if k == target:
+                        count = 1
+                    else:
+                        count = 0
+                elif k == target and max_value == result1[k]:
+                    count = count + 1
+                    key = target
+        if count > 3 : continue
+        # print(max_value)
+        if key == target:
+            right = right + 1
+            sum = sum + count
+        # print("______________________________________")
+    right_rate = right / num
+    average_lenght = sum / right
+    print("校验集top5正确率：", right_rate)
+    print("平均长度:", average_lenght)
+    print("====================End Valid====================")
+
+
 if __name__ == "__main__":
     start_time = time.time()
+    # adaboost 二元分类多元分类单元测试
     # adaboost_test()
     # multiClassifier_test()
-    # train_data_filename = "/home/lightning/Downloads/qq-files/1158423912/file_recv/tz/dataset"
-    # train_data, valid_data, labels = loadFileData(train_data_filename, 0.9)
-    # demo = classifier.MultiClassifier(labels, 400, 10)
-    # result1 = demo.train(train_data)
-    # print("训练集上错误率:", result1)
-    # validTest(valid_data,labels,demo)
-    # end_time = time.time()
-    # print("Total cost time: ", end_time - start_time, 's')
-    # demo.save("./model")
-
-
-    train_data_filename = "/home/lightning/Downloads/qq-files/1158423912/file_recv/tz/dataset"
-    train_data, valid_data, labels = loadFileData(train_data_filename, 0)
-    # train_data_filename = "/home/lightning/Downloads/qq-files/1158423912/file_recv/xl_tz/dataset/经管/"
-    # train_data, valid_data, labels = loadFileData(train_data_filename, 0)
-    demo = classifier.MultiClassifier([])
-    demo.loadFile("./model/adaboost.model","./model/adaboost.labels")
-    # diffTopicTest(valid_data,labels,demo,labels[2])
+    train_data_filename = "/home/lightning/dataset/三农/train"
+    train_data, valid_data, labels = loadFileData(train_data_filename, 0.9)
+    demo = classifier.MultiClassifier(labels, 60, 70)
+    result1 = demo.train(train_data)
+    end_time = time.time()
+    print("Train Data Error Rate:", result1)
+    print("Total Train cost time: ", end_time - start_time, 's')
+    start_time = time.time()
     validTest(valid_data,demo)
+    end_time =time.time()
+    print("Valid Data Cost Time:",end_time-start_time,'s')
+    # 保存创建的模型
+    demo.save("./31")
+
+
+    # 原生文本数据进行分类器性能测试
+    train_data_filename = "/home/lightning/dataset/三农/valid/自然/"
+    train_data, valid_data, labels = loadFileData(train_data_filename, 0)
+    demo = classifier.MultiClassifier([])
+    demo.loadFile("./31/adaboost.model", "./31/adaboost.labels")
+    multiValidTest(valid_data, demo, labels[2])
