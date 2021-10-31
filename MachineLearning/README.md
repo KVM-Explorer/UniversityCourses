@@ -203,15 +203,5 @@ import adaboost
   - cupy
   - MXNET
 
-你好，这里的确写的有些简单，是这样的：$$\begin{align}  \sum\limits_{i=1}^mw_{ki}^{'}exp(-y_i\alpha G(x_i)) &=  \sum\limits_{y_i =G_k(x_i)}w_{ki}^{'}e^{-\alpha} +  \sum\limits_{y_i   \ne G_k(x_i)}w_{ki}^{'}e^{\alpha}  \\& = (e^{\alpha} -  e^{-\alpha})\sum\limits_{i=1}^mw_{ki}^{'}I(y_i \ne G_k(x_i)) +   e^{-\alpha}\sum\limits_{i=1}^mw_{ki}^{'}   \end{align}$$
 
-从1式到2式仅仅是把1式右边的第一部分看做总的减去$y_i \ne G_k(x_i)$的部分。
-
-现在我们对$\alpha$求导并令其导数为0，得到：$$ (e^{\alpha} + e^{-\alpha})\sum\limits_{i=1}^mw_{ki}^{'}I(y_i \ne  G_k(x_i)) -  e^{-\alpha}\sum\limits_{i=1}^mw_{ki}^{'} = 0 $$
-
-注意到：$$e_k = \frac{\sum\limits_{i=1}^{m}w_{ki}^{’}I(y_i \neq G(x_i))}{\sum\limits_{i=1}^{m}w_{ki}^{’}}$$
-
-将$e_k$的表达式带入上面导数为0 的表达式，我们得到：$$(e^{\alpha} + e^{-\alpha})e_k - e^{-\alpha} = 0 $$
-
-求解这个式子，我们就得到文中说的$\alpha$的最优解$\alpha_k$了。
 
