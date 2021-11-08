@@ -27,8 +27,11 @@ class MultiClassifier:
         :return: 返回训练后对于训练数据的错误率
         '''
         print("====================Start Training====================")
+        index= 0
         for i in range(self.classes):
             for j in range(i):
+                index = index + 1
+                print(f"iterators: {index}/{(self.classes*(self.classes-1))/2}")
                 # 建立映射关系
                 mapping = {}
                 mapping[self.labels[i]] = 1

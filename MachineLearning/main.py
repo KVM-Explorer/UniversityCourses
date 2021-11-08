@@ -163,7 +163,7 @@ def multiValidTest(valid_data, demo, target):
                 elif k == target and max_value == result1[k]:
                     count = count + 1
                     key = target
-        if count > 3 : continue
+        # if count > 3 : continue
         # print(max_value)
         if key == target:
             right = right + 1
@@ -184,21 +184,22 @@ if __name__ == "__main__":
     train_data_filename = "/home/lightning/dataset/三农/train"
     train_data, valid_data, labels = loadFileData(train_data_filename, 0.9)
     demo = classifier.MultiClassifier(labels, 60, 70)
-    result1 = demo.train(train_data)
-    end_time = time.time()
-    print("Train Data Error Rate:", result1)
-    print("Total Train cost time: ", end_time - start_time, 's')
-    start_time = time.time()
-    validTest(valid_data,demo)
-    end_time =time.time()
-    print("Valid Data Cost Time:",end_time-start_time,'s')
-    # 保存创建的模型
-    demo.save("./31")
+    # result1 = demo.train(train_data)
+    # end_time = time.time()
+    # print("Train Data Error Rate:", result1)
+    # print("Total Train cost time: ", end_time - start_time, 's')
+    # start_time = time.time()
+    # validTest(valid_data,demo)
+    # end_time =time.time()
+    # print("Valid Data Cost Time:",end_time-start_time,'s')
+    # # 保存创建的模型
+    # demo.save("./31")
 
 
     # 原生文本数据进行分类器性能测试
     train_data_filename = "/home/lightning/dataset/三农/valid/自然/"
     train_data, valid_data, labels = loadFileData(train_data_filename, 0)
-    demo = classifier.MultiClassifier([])
+
     demo.loadFile("./31/adaboost.model", "./31/adaboost.labels")
     multiValidTest(valid_data, demo, labels[2])
+    # validTest(valid_data,demo)

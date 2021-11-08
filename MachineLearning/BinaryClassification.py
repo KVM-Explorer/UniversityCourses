@@ -80,10 +80,10 @@ if __name__=="__main__":
     train,valid,labels= loadFileData(path,0.7)
     #
     demo = adaboost.Adaboost(400,2)
-    train_data, train_labels = doubleDividedData(train, labels)
-
-    demo.train(train_data, train_labels)
-    save("DoubleDivided",demo)
+    # train_data, train_labels = doubleDividedData(train, labels)
+    #
+    # demo.train(train_data, train_labels)
+    # save("DoubleDivided",demo)
 
     # 二分类性能测试
     valid_data,valid_labels = doubleDividedData(valid,labels)
@@ -96,5 +96,5 @@ if __name__=="__main__":
         if result != valid_labels[i] : error = error +1
 
     right_rate = (len(valid_labels)-error)/len(valid_labels)
-    print(right_rate)
+    print("BinaryClassification Right Rate:",right_rate)
     print("finish")
