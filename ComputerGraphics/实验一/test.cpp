@@ -45,10 +45,7 @@ int main(int argc, char **argv)
 
     glutCreateWindow("Project One");
 
-
-
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
-
     glutMainLoop();
 }
