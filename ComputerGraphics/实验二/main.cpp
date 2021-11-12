@@ -61,6 +61,7 @@ void display()
     glPushMatrix();
     glTranslatef(X,Y,0);
     glRotatef(Angle,0,0,1);
+    glScaled(Scale,Scale,0);
     glTranslatef(-X,-Y,0);
     DrawStar(X,Y,30,100,18);
     glPopMatrix();
