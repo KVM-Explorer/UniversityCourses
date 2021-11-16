@@ -9,7 +9,6 @@ using namespace std;
 
 float Header[]={0,0,-1};
 float Position[]={3,0,5};
-float Right[] = {0.1,0,0};
 
 float alpha = 0;
 float step = 10;
@@ -40,7 +39,7 @@ GLuint LoadTexture(char* name)
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
     // 多层采样
     gluBuild2DMipmaps(GL_TEXTURE_2D,
-                      GL_RGB`,
+                      GL_RGB,
                       width,
                       height,
                       GL_BGR,
@@ -55,8 +54,6 @@ GLuint LoadTexture(char* name)
         std::cout<<err<<std::endl;
         exit(0);
     }
-
-//    SOIL_free_image_data(data);
 
     return tID;
 
@@ -79,35 +76,30 @@ void display()
     gluLookAt(Position[0],Position[1],Position[2],
               0,0,0,
               0,1,0);
-//    std::cout<<Position[0]<<' '<<Position[1]<<' '<<Position[2]<<endl;
     std::cout<<at[0]<<' '<<at[1]<<' '<<at[2]<<"   Position"<<Position[0]<<' '<<Position[1]<<' '<<Position[2]<<std::endl;
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D,textureID);
 
     glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-//    glColor3f(1,0,0);
+    glColor3f(1,0,0);
     {
         glBegin(GL_TRIANGLES);
         {
-
             glTexCoord2f(0,0);glVertex3f(-30,-30,0);
-
             glTexCoord2f(0.5,1);glVertex3f(0,30,0);
-
             glTexCoord2f(1,0);glVertex3f(30,-30,0);
         }
         glEnd();
     }
     glDisable(GL_TEXTURE_2D);
-//    glColor3f(1,1,1);
-//    {
-//        glBegin(GL_POLYGON);
-//        for (int i = 0; i < 200; i++) {
-//            glVertex3f(2*cos(2*M_PI/200*i),2*sin(2*M_PI/200*i),0);
-//        }
-//
-//        glEnd();
-//    }
+    glColor3f(1,1,1);
+    {
+        glBegin(GL_POLYGON);
+        for (int i = 0; i < 200; i++) {
+            glVertex3f(2*cos(2*M_PI/200*i),2*sin(2*M_PI/200*i),0);
+        }
+        glEnd();
+    }
     glutSwapBuffers();
 }
 
@@ -146,7 +138,6 @@ void keyBoard(unsigned char key,int x,int y)
         case 'A':
             {
                 Angle +=AngleStep;
-//                std::cout<<Angle<<endl;
                 float radius = sqrt(Position[0]*Position[0]+Position[2]*Position[2]);
                 Position[0]=radius*cos(Angle/180*M_PI);
                 Position[2]=radius*sin(Angle/180*M_PI);
@@ -155,7 +146,6 @@ void keyBoard(unsigned char key,int x,int y)
         case 'D':
             {
                 Angle -=AngleStep;
-//                std::cout<<Angle<<endl;
                 float radius = sqrt(Position[0]*Position[0]+Position[2]*Position[2]);
                 Position[0]=radius*cos(Angle/180*M_PI);
                 Position[2]=radius*sin(Angle/180*M_PI);
