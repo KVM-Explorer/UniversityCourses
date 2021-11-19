@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.15)
 
 set(CMAKE_CXX_STANDARD 14)
 set(TARGET_NAME Class3-CameraAndMapPattern)
-add_executable(${TARGET_NAME} main.cpp)
+file(GLOB_RECURSE TARGET_HEADER "*.h")
+file(GLOB_RECURSE TARGET_SOURCE "*.cpp")
+add_executable(${TARGET_NAME} ${TARGET_HEADER} ${TARGET_SOURCE} )
 
 # OpenGL
 find_package(OpenGL REQUIRED)
