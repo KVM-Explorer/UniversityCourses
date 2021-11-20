@@ -1,14 +1,18 @@
-
-#include <iostream>
+#include <GL/glew.h>//OpenGL库
+#include <GL/glut.h>//OpenGL辅助库
+#include <SOIL/SOIL.h>
 #include <math.h>
 #include <opencv2/opencv.hpp>
 #include "cgSphere.h"
-#include "cgCube.h"
 #include "cgCylinder.h"
 #include <GL/glu.h>
 #include <GL/glut.h>
 using namespace std;
 
+float alpha=0.0f;
+float pos[]={3,2.0,5};
+float headdir[]={0.0f,0.0f,-1.0f};
+float rightdir[]={0.1f,0.0f,0.0f};
 
 float Header[]={0,0,-1}; // 观察位置相对目标位置偏移量
 float Position[]={3,10,30}; // 目标位置
@@ -24,9 +28,9 @@ GLuint textureSky;
 GLuint textureWall;
 GLuint textureFun;
 cgSphere Sphere;
-cgCube Cube;
-cgCylinder Cylinder;
-cgCube LightBox;
+//cgCube Cube;
+//cgCylinder Cylinder;
+//cgCube LightBox;
 
 
 //光照变量
@@ -37,14 +41,28 @@ GLfloat aMaterial[] = { .20, 0.20, 0.20, 1.0 }; //环境光反射系数
 GLfloat dMaterial[] = { .60, 0.60, 0.60, 1.0 }; //漫反射光反射系数
 GLfloat sMaterial[] = { 0.8, 0.8,0.8, 1 }; //镜面反射光反射系数
 GLfloat shiniess = 20;//高光指数
-
-
-void RotatedLookAt(float theta)
+float headdir_buffer[] = {0.0,0.0,0.0};
+int rendermode = 0;//0:填充； 1:线框；2：纹理
+float turn_step = 0.025f;
+GLuint textureID;
+GLuint texture2;
+GLuint texture3;
+GLuint texture4;
+int  frames=0;
+void turnHri(int right)
 {
-    auto angle = theta/180*M_PI;
-    float  p = sqrt(Header[2]*Header[2]+Header[0]*Header[0]);
-    Header[0] = sin(angle);
-    Header[2] = -cos(angle);
+    double len = sqrt(headdir[0] * headdir[0] + headdir[2] * headdir[2]);
+    headdir_buffer[0] = headdir[0];
+    headdir_buffer[1] = headdir[1];
+    headdir_buffer[2] = headdir[2];
+    float dif_vector[] = {-headdir_buffer[2],0,headdir_buffer[0]};
+    for(int i = 0 ; i < 3;i++)
+        headdir[i] += (right == 1?dif_vector[i] * turn_step:-dif_vector[i]*turn_step);
+
+}
+void turnVer(int up)
+{
+    headdir[1] += (up == 1?turn_step:-turn_step);
 }
 
 GLuint LoadTexture(char* name)
@@ -110,8 +128,8 @@ void display()
 
     float at[3];
     for (int i=0; i<3; i++)
-        at[i] = Position[i] + Header[i];
-    gluLookAt (Position[0], Position[1], Position[2], at[0], at[1], at[2], 0.0, 1.0, 0.0);
+        at[i] = pos[i] + headdir[i];
+    gluLookAt (pos[0], pos[1], pos[2], at[0], at[1], at[2], 0.0, 1.0, 0.0);
 
     glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
     //地面
@@ -186,82 +204,95 @@ void reshape(int width,int height)
     glLoadIdentity();
 }
 
-void keyBoard(unsigned char key,int x,int y)
+void keyboard(unsigned char key, int x, int y)
 {
     switch (key) {
         case 'w':
-        case 'W':
-            for(int i=0;i<3;i++) Position[i]+=step*Header[i];
+            for (int i=0; i<3; i++)
+                pos[i] += step*headdir[i];
             break;
+        case 'S':   //下移
         case 's':
-        case 'S':
-            for(int i=0;i<3;i++) Position[i]-=step*Header[i];
+            for (int i=0; i<3; i++)
+                pos[i] -= step*headdir[i];
             break;
+        case 'A':  //左移
         case 'a':
-        case 'A':
-            {
-                Position[0]-=step;
-                break;
-            }
+            for (int i=0; i<3; i++)
+                pos[i] -= step*rightdir[i]*5;
+            break;
+        case 'D':   //右移
         case 'd':
-        case 'D':
-            {
-               Position[0]+=step;
-                break;
-            }
-        case 'q':
-        case 'Q':
-            Angle -=AngleStep;
-            RotatedLookAt(Angle);
+            for (int i=0; i<3; i++)
+                pos[i] += step*rightdir[i]*5;
             break;
-        case 'e':
-        case 'E':
-            Angle += AngleStep;
-            RotatedLookAt(Angle);
-            break;
-        case 'z':
+
         case 'Z':
-            Header[1] -= 0.01;
+        case 'z':
+            //̧光源
+            //pos[1] += .30f;
+            light_position[1] += 1.0;
             break;
-        case 'C':
-        case 'c':
-            Header[1] += 0.01;
-            break;
+
         case 'X':
         case 'x':
-            Position[1] -=step;
+            //光源
+            //pos[1] -= .30f;
+            light_position[1] -= 1.0;
             break;
-        case ' ':
-            Position[1]+=step;
-            break;
-        case 'i':
-        case 'I':
-            light_position[1] += 1;
-            break;
-        case 'k':
-        case 'K':
-            light_position[1] -=1;
-            break;
+
+        case 'N':   //蓝
         case 'n':
             light_color[0] = 0.0;
-            light_color[1] = 1.0;
+            light_color[1] = 0.0;
             light_color[2] = 1.0;
             break;
+        case 'M':   //黄
         case 'm':
             light_color[0] = 1.0;
             light_color[1] = 1.0;
             light_color[2] = 0.0;
             break;
-        case 'b'://原来颜色
+        case 'i'://原来颜色
             light_color[0] = 1.0;
             light_color[1] = 1.0;
             light_color[2] = 1.0;
             break;
-
     }
+
     glutPostRedisplay();
 }
-void init()
+
+void SpecialKey(GLint key,GLint x,GLint y)
+{
+    switch (key)
+    {
+        case GLUT_KEY_UP:
+            for (int i=0; i<3; i++)
+                pos[i] += step*headdir[i];
+            break;
+
+        case GLUT_KEY_DOWN:
+            for (int i=0; i<3; i++)
+                pos[i] -= step*headdir[i];
+            break;
+
+        case GLUT_KEY_LEFT:
+            for (int i=0; i<4; i++)
+                pos[i] -= step*rightdir[i];
+            break;
+
+
+        case GLUT_KEY_RIGHT:
+            for (int i=0; i<4; i++)
+                pos[i] += step*rightdir[i];
+            break;
+    }
+
+    glutPostRedisplay();
+}
+
+void init(void)
 {
     glClearColor(0.5, 1.0, 1.0, 1.0);
     glEnable(GL_DEPTH_TEST);
@@ -288,9 +319,13 @@ int main(int argc,char** argv)
     glutCreateWindow("Class4-Light");
     init();
 
-    glutDisplayFunc(display);
-    glutReshapeFunc(reshape);
-    glutIdleFunc(Controller);
-    glutKeyboardFunc(keyBoard);
-    glutMainLoop();
+    glutDisplayFunc(display);//图形绘制
+    glutReshapeFunc(reshape);//窗口大小变化
+    glutKeyboardFunc(keyboard);//键盘交互
+    glutSpecialFunc(&SpecialKey);//方向键
+    glutIdleFunc(Controller);//空闲时间执行
+
+    glutMainLoop();//必须，进入GLUT事件处理循环
+
+    return 0;
 }
