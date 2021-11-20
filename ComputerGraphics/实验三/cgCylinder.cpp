@@ -98,6 +98,7 @@ void cgCylinder::Render(GLuint texture)
 
 	glTranslatef(ptPos.x,ptPos.y,ptPos.z);
     glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D,texture);
 	for(; it1 != vTris.end(); it1++,it2++)
 	{
         glBegin(GL_TRIANGLES);

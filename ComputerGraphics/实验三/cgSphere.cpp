@@ -58,15 +58,15 @@ void cgSphere::InitData(float r)
 			Rect rect;
 			rect.Pt[0] = cgPoint3D(x01,y01,z1);
 			rect.Pt[1] = cgPoint3D(x02,y02,z1);
-//			rect.Pt[2] = cgPoint3D(x12,y12,z2);
-//            rect.Pt[3] = cgPoint3D(x11,y11,z2);
+			rect.Pt[2] = cgPoint3D(x12,y12,z2);
+            rect.Pt[3] = cgPoint3D(x11,y11,z2);
             RectArray.push_back(rect);
 
             F f;
             f.Pt[0] = cgPoint3D(alpha/2.f/M_PI,beta/M_PI);
             f.Pt[1] = cgPoint3D((alpha+dalpha)/M_PI/2.f,beta/M_PI);
-//            f.Pt[2] = cgPoint3D((alpha+dalpha)/2.f/M_PI,(beta+dbeta)/M_PI);
-//            f.Pt[3] = cgPoint3D(alpha/2.f/M_PI,(beta+dbeta)/M_PI);
+            f.Pt[2] = cgPoint3D((alpha+dalpha)/2.f/M_PI,(beta+dbeta)/M_PI);
+            f.Pt[3] = cgPoint3D(alpha/2.f/M_PI,(beta+dbeta)/M_PI);
             FArray.push_back(f);
 
 			alpha += dalpha;
@@ -81,7 +81,7 @@ void cgSphere::Render(GLuint texture)
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	glRotatef(90,1,0,0);
+//	glRotatef(90,1,0,0);
 	glTranslatef(ptPos.x,ptPos.y,ptPos.z);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D,texture);

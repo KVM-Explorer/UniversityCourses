@@ -96,21 +96,21 @@ void display()
               0,1,0);
     std::cout<<Header[0]<<' '<<Header[1]<<' '<<Header[2]<<std::endl;
 
-    // 天空远景
-//    glEnable(GL_TEXTURE_2D);
-//    glBindTexture(GL_TEXTURE_2D, textureGround);
-//    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-//    glColor3f(1,0,1);
-//    glBegin(GL_POLYGON);
-//        glTexCoord2f(0,0);glVertex3f(-500,-200,-500);
-//        glTexCoord2f(0,10);glVertex3f(500,-200,-500);
-//        glTexCoord2f(10,10);glVertex3f(500,-200,500);
-//        glTexCoord2f(10,0);glVertex3f(-500,-200,500);
-//    glEnd();
+    // 地面
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureGround);
+    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    glColor3f(1,0,1);
+    glBegin(GL_POLYGON);
+        glTexCoord2f(0,0);glVertex3f(-500,-200,-500);
+        glTexCoord2f(0,10);glVertex3f(500,-200,-500);
+        glTexCoord2f(10,10);glVertex3f(500,-200,500);
+        glTexCoord2f(10,0);glVertex3f(-500,-200,500);
+    glEnd();
 
-    //  地面
+//    //  天空
 //    glEnable(GL_TEXTURE_2D);
-//    glBindTexture(GL_TEXTURE_2D,textureSphere);
+//    glBindTexture(GL_TEXTURE_2D,textureSky);
 //    glBegin(GL_QUADS);
 //    glTexCoord2f(0,0);
 //    glVertex3f(-500,500,0);
@@ -124,9 +124,9 @@ void display()
 //    glDisable(GL_TEXTURE_2D);
 
     //  绘制球、正方体、圆柱体
-    Sphere.Render(textureFun);
-    Cube.Render(textureFun);
-    Cylinder.Render(textureID1);
+    Sphere.Render(textureSphere);
+    Cube.Render(textureWall);
+    Cylinder.Render(textureFun);
 
     glutSwapBuffers();
 }

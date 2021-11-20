@@ -50,6 +50,18 @@ void cgCube::InitData(float length)
     plane.Pt[2] = cgPoint3D(l,l,-l);
     plane.Pt[3] = cgPoint3D(l,-l,-l);
     Planes.push_back(plane);
+
+    plane.Pt[0] = cgPoint3D(-l,l,l);
+    plane.Pt[1] = cgPoint3D(-l,l,-l);
+    plane.Pt[2] = cgPoint3D(l,l,-l);
+    plane.Pt[3] = cgPoint3D(l,l,l);
+    Planes.push_back(plane);
+
+    plane.Pt[0] = cgPoint3D(-l,-l,l);
+    plane.Pt[1] = cgPoint3D(-l,-l,-l);
+    plane.Pt[2] = cgPoint3D(l,-l,-l);
+    plane.Pt[3] = cgPoint3D(l,-l,l);
+    Planes.push_back(plane);
 }
 
 void cgCube::Render(GLuint texture)
@@ -61,6 +73,7 @@ void cgCube::Render(GLuint texture)
 
 	glTranslatef(ptPos.x,ptPos.y,ptPos.z);
     glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D,texture);
 	for(; it !=Planes.end(); it++)
 	{
         glBegin(GL_QUADS);
@@ -71,6 +84,7 @@ void cgCube::Render(GLuint texture)
                idy = i%2;
                if(i>1)idy=(i+1)%2;
                glTexCoord2f(idx,idy);
+               glNormal3f(0,1,1);
                glVertex3f((*it).Pt[i].x,(*it).Pt[i].y,(*it).Pt[i].z);
            }
        glEnd();
