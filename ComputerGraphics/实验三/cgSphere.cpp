@@ -81,7 +81,7 @@ void cgSphere::Render(GLuint texture)
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-//	glRotatef(90,1,0,0);
+	glRotatef(90,1,0,0);
 	glTranslatef(ptPos.x,ptPos.y,ptPos.z);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D,texture);

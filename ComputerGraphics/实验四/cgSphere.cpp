@@ -1,7 +1,7 @@
 #pragma once
 #include "cgSphere.h"
 #include <math.h>
-
+#include <math.h>
 cgSphere::cgSphere(void)
 {
 	ptPos = cgPoint3D();
@@ -12,9 +12,11 @@ cgSphere::~cgSphere(void)
 {
 }
 
-void cgSphere::SetPos(cgPoint3D pos)
+void cgSphere::SetPos(cgPoint3D pos,float d,float angle)
 {
 	ptPos = pos;
+    D = d;
+    Angle = angle;
 }
 
 void cgSphere::InitData(float r)
@@ -81,6 +83,14 @@ void cgSphere::Render(GLuint texture)
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
+
+    // 旋转
+    float x,y,z;
+    x = ptPos.x + D*sin(Angle/180*M_PI);
+    y = ptPos.y;
+    z = ptPos.z + D*cos(Angle/180*M_PI);
+    glTranslatef(x,y,z);
+
 	glRotatef(90,1,0,0);
 	glTranslatef(ptPos.x,ptPos.y,ptPos.z);
 	glEnable(GL_TEXTURE_2D);

@@ -23,6 +23,8 @@ public:
     };
 private:
 	float fR;
+    float Angle;
+    float D;
 	cgPoint3D ptPos; 
 	vector<Rect> RectArray;
     vector<F> FArray;

@@ -11,12 +11,12 @@ using namespace std;
 
 
 float Header[]={0,0,-1}; // 观察位置相对目标位置偏移量
-float Position[]={3,0,5}; // 目标位置
+float Position[]={3,10,30}; // 目标位置
 
 float step = 1;  // 平移步长
 float Angle = 0;    // 初始绝对角度
 float AngleStep = 5; // 旋转步长
-
+float RotatedAngle = 0;
 GLuint textureID1;
 GLuint textureGround;
 GLuint textureSphere;
@@ -140,36 +140,36 @@ void display()
 
 
 
-//   天空
-//    glEnable(GL_TEXTURE_2D);
-//    glBindTexture(GL_TEXTURE_2D,textureSky);
-//    glBegin(GL_QUADS);
-//    glTexCoord2f(0,0);
-//    glNormal3f(0,1,0);
-//    glVertex3f(-50,50,-20);
-//    glTexCoord2f(0,10);
-//    glNormal3f(0,1,0);
-//    glVertex3f(50,50,-20);
-//    glTexCoord2f(10,10);
-//    glNormal3f(0,1,0);
-//    glVertex3f(50,-20,-20);
-//    glTexCoord2f(10,0);
-//    glNormal3f(0,1,0);
-//    glVertex3f(-50,-20,-20);
-//    glEnd();
-//    glDisable(GL_TEXTURE_2D);
-//
-//    //  绘制球、正方体、圆柱体
-    Sphere.Render(textureSphere);
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D,textureWall);
+    glBegin(GL_QUADS);
+    glTexCoord2f(0,0);
+    glNormal3f(0,1,0);
+    glVertex3f(-50,50,-20);
+    glTexCoord2f(0,10);
+    glNormal3f(0,1,0);
+    glVertex3f(50,50,-20);
+    glTexCoord2f(10,10);
+    glNormal3f(0,1,0);
+    glVertex3f(50,-20,-20);
+    glTexCoord2f(10,0);
+    glNormal3f(0,1,0);
+    glVertex3f(-50,-20,-20);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+
+    //  绘制球、正方体、圆柱体
+
+    Sphere.Render(textureFun);
     Cube.Render(textureWall);
-////    Cylinder.Render(textureFun);
 
     glutSwapBuffers();
 }
-
 void Controller()
 {
-
+    RotatedAngle+=1;
+    Sphere.SetPos(cgPoint3D(0,2,0) ,20,RotatedAngle);
     glutPostRedisplay();
 }
 
@@ -188,7 +188,6 @@ void reshape(int width,int height)
 
 void keyBoard(unsigned char key,int x,int y)
 {
-//    std::cout<<key<<std::endl;
     switch (key) {
         case 'w':
         case 'W':
@@ -271,9 +270,9 @@ void init()
     textureSphere = LoadTexture("Emjo.png");
     textureSky = LoadTexture("sky.png");
     textureWall = LoadTexture("wall.png");
-    textureFun = LoadTexture("FUN.png");
-    Sphere.InitData(30);
-    Sphere.SetPos(cgPoint3D(10.f,20.f,30.f));
+    textureFun = LoadTexture("rose.png");
+    Sphere.InitData(10);
+    Sphere.SetPos(cgPoint3D(0,2,0),20 ,0);
     Cube.InitData(30);
     Cube.SetPos(cgPoint3D(50,50,30));
     Cylinder.InitData(10,20);

@@ -12,7 +12,7 @@ public:
 
 	void InitData(float r);
 	void Render(GLuint texture);
-	void SetPos(cgPoint3D pos);
+	void SetPos(cgPoint3D pos,float d,float angle);
     struct Rect
     {
         cgPoint3D Pt[4];
@@ -23,6 +23,8 @@ public:
     };
 private:
 	float fR;
+    float D;
+    float Angle;
 	cgPoint3D ptPos; 
 	vector<Rect> RectArray;
     vector<F> FArray;
