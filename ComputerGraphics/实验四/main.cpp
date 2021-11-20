@@ -49,21 +49,6 @@ GLuint texture2;
 GLuint texture3;
 GLuint texture4;
 int  frames=0;
-void turnHri(int right)
-{
-    double len = sqrt(headdir[0] * headdir[0] + headdir[2] * headdir[2]);
-    headdir_buffer[0] = headdir[0];
-    headdir_buffer[1] = headdir[1];
-    headdir_buffer[2] = headdir[2];
-    float dif_vector[] = {-headdir_buffer[2],0,headdir_buffer[0]};
-    for(int i = 0 ; i < 3;i++)
-        headdir[i] += (right == 1?dif_vector[i] * turn_step:-dif_vector[i]*turn_step);
-
-}
-void turnVer(int up)
-{
-    headdir[1] += (up == 1?turn_step:-turn_step);
-}
 
 GLuint LoadTexture(char* name)
 {
@@ -291,8 +276,7 @@ void SpecialKey(GLint key,GLint x,GLint y)
 
     glutPostRedisplay();
 }
-
-void init(void)
+void init()
 {
     glClearColor(0.5, 1.0, 1.0, 1.0);
     glEnable(GL_DEPTH_TEST);
@@ -319,13 +303,10 @@ int main(int argc,char** argv)
     glutCreateWindow("Class4-Light");
     init();
 
-    glutDisplayFunc(display);//图形绘制
-    glutReshapeFunc(reshape);//窗口大小变化
-    glutKeyboardFunc(keyboard);//键盘交互
-    glutSpecialFunc(&SpecialKey);//方向键
-    glutIdleFunc(Controller);//空闲时间执行
-
-    glutMainLoop();//必须，进入GLUT事件处理循环
-
+    glutDisplayFunc(display);
+    glutReshapeFunc(reshape);
+    glutIdleFunc(Controller);
+    glutKeyboardFunc(keyboard);
+    glutMainLoop();
     return 0;
 }
