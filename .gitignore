@@ -1,1 +1,14 @@
-/.idea/
+# Jetbrains
+.idea
+.gitignore
+# C++
+cmake-build-debug
+# Java
+build
+gen
+out
+.gradle
+.class
+*.apk
+# Python
+__pycache__
