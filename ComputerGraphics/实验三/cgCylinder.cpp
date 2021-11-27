@@ -23,7 +23,7 @@ void cgCylinder::InitData(float r,float h)
 
 	vTris.clear();
 
-    int m = 20;
+    int m = 200;
 
 	float dalpha = 2.0f*PI/m;
 
