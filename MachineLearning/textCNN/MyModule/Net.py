@@ -76,6 +76,8 @@ class Conv:
 
         # 计算梯度
         delta_col = delta.reshape(delta_batches, -1, dc)
+        # 重置梯度
+        self.k_gradient = self.k_gradient * 0
         for i in range(delta_batches):
             self.k_gradient += cp.dot(self.image_col[i].T, delta_col[i]).reshape(self.k.shape)
 
@@ -129,7 +131,20 @@ class Pool:
         return feature
 
     def backward(self, delta):
-        return cp.repeat(delta, self.ksize, axis=2) * self.feature_mask
+        # print(self.feature_mask.shape)
+        # print(delta.shape)
+        # print(cp.repeat(delta, self.ksize, axis=1).shape)
+        origin_height = self.feature_mask.shape[1]
+        if (origin_height % 2 == 1):
+
+            result = cp.repeat(delta, self.ksize, axis=1)
+            # print(result.shape)
+            result = cp.pad(result, ((0, 0), (0, 1), (0, 0), (0, 0)), 'constant')
+            # print(result.shape)
+            result = result * self.feature_mask
+            return result
+        else:
+            return cp.repeat(delta, self.ksize, axis=1) * self.feature_mask
 
 
 class Flatten:
@@ -154,11 +169,11 @@ class Flatten:
         return reuslt
 
     def backward(self, delta):
-        batch_size, dw, dh = delta.shape
-        backward_flatten = cp.zeros((batch_size, dw, self.height, self.channels))
-
+        batch_size, dh = delta.shape
+        backward_flatten = cp.zeros((batch_size, self.height, 1, self.channels))
+        # print(f"origin_height:{self.height} delta_height:{dh}")
         for batch in range(batch_size):
-            backward_flatten[batch] = delta[batch, dh, 1].reshape(self.height, 1, self.channels)
+            backward_flatten[batch] = delta[batch].reshape(self.height, 1, self.channels)
         return backward_flatten
 
 
@@ -177,24 +192,25 @@ class Concat:
         self.secondHeight = yh
         self.thirdHeight = zh
         result = cp.zeros((xbatch_size, 1, yh + xh + zh))
-        print(f"result = {result.shape}")
+        # print(f"result = {result.shape}")
         for i in range(ybatch_size):
             # 此处为行向量方便后续的矩阵乘法计算全连接层
             result[i] = cp.concatenate((x[i], y[i], z[i]), axis=0).reshape(1, -1)
-            print(result[i].shape)
+            # print(result[i].shape)
         return result
 
     def backward(self, delta):
-        delta_batches, dw, dh, dc = delta.shape
+        # print(delta.shape)
+        delta_batches, total_height = delta.shape
         x = cp.zeros((delta_batches, self.firstHeight))
         y = cp.zeros((delta_batches, self.secondHeight))
         z = cp.zeros((delta_batches, self.thirdHeight))
 
         for i in range(delta_batches):
             x[i] = delta[i][0:self.firstHeight]
-            y[i] = delta[i][self.firstHeight, self.firstHeight + self.secondHeight]
+            y[i] = delta[i][self.firstHeight:self.firstHeight + self.secondHeight]
             z[i] = delta[i][
-                self.firstHeight + self.secondHeight, self.firstHeight + self.secondHeight + self.thirdHeight]
+                   self.firstHeight + self.secondHeight:self.firstHeight + self.secondHeight + self.thirdHeight]
         return x, y, z
 
 
@@ -216,20 +232,15 @@ class Fc:
 
     def backward(self, delta, learning_rate):
         batch_size = self.x.shape[0]
-        self.k_gradient = cp.dot(self.x.T, delta) / batch_size
+
+        self.k_gradient = cp.dot(self.x.T, delta).reshape(-1, 2) / batch_size
         self.b_gradient = cp.sum(delta, axis=0) / batch_size
         result = cp.dot(delta, self.k.T)
-        print(f"result:{result.shape}")
-        print(self.k_gradient.shape)
-        print(self.b_gradient.shape)
-        print(self.b)
-        leanring_k_matrix = cp.repeat(cp.repeat(cp.array([[[learning_rate]]]), self.k_gradient.shape[2], axis=2), self.k_gradient.shape[0], axis=0)
-        leanring_b_matrix = cp.repeat(cp.array([learning_rate]),self.b_gradient.shape[0])
-        print(leanring_b_matrix.shape)
-        print(leanring_k_matrix.shape,self.k_gradient.shape)
-        print(self.k.shape)
-        self.k -= cp.multiply(self.k_gradient,leanring_k_matrix)
-        self.b -= self.b_gradient * leanring_b_matrix
+        # print(f"K:{self.k.shape} k_gradient:{self.k_gradient.shape}")
+        # print(f"b:{self.b.shape} b_gradient:{self.b_gradient.shape}")
+
+        self.k -= self.k_gradient * learning_rate
+        self.b -= self.b_gradient * learning_rate
 
         return result
 
@@ -241,8 +252,10 @@ class Softmax:
         self.predict(x)
         loss = 0
         delta = cp.zeros(x.shape)
+        right = 0
         for i in range(batch_size):
             delta[i] = self.softmax[i] - label[i]
+            # print("softmax: ",self.softmax[i])
             # 计算交叉熵
             loss -= cp.sum(cp.log(self.softmax[i]) * label[i])
         loss /= batch_size
