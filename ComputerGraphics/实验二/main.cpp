@@ -72,7 +72,7 @@ void display()
     glRotatef(Angle,0,0,1);
     glScaled(Scale,Scale,0);
     glTranslatef(-400,-400,0);
-    DrawStar(400,400,10,30,18);
+    DrawStar(400,400,20,60,18);
 
     glPopMatrix();
 

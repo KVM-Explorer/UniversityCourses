@@ -1,21 +1,39 @@
-#pragma once
-#include <GL/glut.h>
-#include <GL/glu.h>
+
 #include <iostream>
 #include <math.h>
 #include <opencv2/opencv.hpp>
-#include <SOIL/SOIL.h>
+#include "cgSphere.h"
+#include "cgCube.h"
+#include "cgCylinder.h"
+#include <GL/glu.h>
+#include <GL/glut.h>
 using namespace std;
 
-float Header[]={0,0,-1};
-float Position[]={3,0,5};
+float Header[]={0,0,-1}; // 观察位置相对目标位置偏移量
+float Position[]={3,0,5}; // 目标位置
 
-float alpha = 0;
-float step = 10;
-float Angle = 90;
-float AngleStep = 1;
+float step = 10;  // 平移步长
+float Angle = 0;    // 初始绝对角度
+float AngleStep = 5; // 旋转步长
 
-GLuint textureID;
+GLuint textureID1;
+GLuint textureGround;
+GLuint textureSphere;
+GLuint textureSky;
+GLuint textureWall;
+GLuint textureFun;
+cgSphere Sphere;
+cgCube Cube;
+cgCylinder Cylinder;
+
+void RotatedLookAt(float theta)
+{
+    auto angle = theta/180*M_PI;
+    float  p = Header[2];
+    Header[0] = sin(angle);
+    Header[2] = -cos(angle);
+}
+
 
 GLuint LoadTexture(char* name)
 {
@@ -26,8 +44,6 @@ GLuint LoadTexture(char* name)
     width = image.cols;
     height = image.rows;
     channels = image.channels();
-    int pixel_length = width*height*channels;
-    auto pixels = new GLubyte [pixel_length];
 
     glGenTextures(1,&tID);
     glBindTexture(GL_TEXTURE_2D,tID);
@@ -46,7 +62,6 @@ GLuint LoadTexture(char* name)
                       GL_UNSIGNED_BYTE,image.data);
     // 直接构建纹理
 //    glTexImage2D(GL_TEXTURE_2D,0,GL_RGB,width,height,0,GL_BGR_EXT,GL_UNSIGNED_BYTE,image.data);
-    free(pixels);
 
     GLenum err;
     if ((err=glGetError())!=GL_NO_ERROR)
@@ -63,6 +78,9 @@ GLuint LoadTexture(char* name)
 void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -74,39 +92,47 @@ void display()
     }
 
     gluLookAt(Position[0],Position[1],Position[2],
-              0,0,0,
+              at[0],at[1],at[2],
               0,1,0);
-    std::cout<<at[0]<<' '<<at[1]<<' '<<at[2]<<"   Position"<<Position[0]<<' '<<Position[1]<<' '<<Position[2]<<std::endl;
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D,textureID);
+    std::cout<<Header[0]<<' '<<Header[1]<<' '<<Header[2]<<std::endl;
 
+    // 地面
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureGround);
     glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-    glColor3f(1,0,0);
-    {
-        glBegin(GL_TRIANGLES);
-        {
-            glTexCoord2f(0,0);glVertex3f(-30,-30,0);
-            glTexCoord2f(0.5,1);glVertex3f(0,30,0);
-            glTexCoord2f(1,0);glVertex3f(30,-30,0);
-        }
-        glEnd();
-    }
-    glDisable(GL_TEXTURE_2D);
-    glColor3f(1,1,1);
-    {
-        glBegin(GL_POLYGON);
-        for (int i = 0; i < 200; i++) {
-            glVertex3f(2*cos(2*M_PI/200*i),2*sin(2*M_PI/200*i),0);
-        }
-        glEnd();
-    }
+    glColor3f(1,0,1);
+    glBegin(GL_POLYGON);
+        glTexCoord2f(0,0);glVertex3f(-500,-200,-500);
+        glTexCoord2f(0,10);glVertex3f(500,-200,-500);
+        glTexCoord2f(10,10);glVertex3f(500,-200,500);
+        glTexCoord2f(10,0);glVertex3f(-500,-200,500);
+    glEnd();
+
+//    //  天空
+//    glEnable(GL_TEXTURE_2D);
+//    glBindTexture(GL_TEXTURE_2D,textureSky);
+//    glBegin(GL_QUADS);
+//    glTexCoord2f(0,0);
+//    glVertex3f(-500,500,0);
+//    glTexCoord2f(0,10);
+//    glVertex3f(500,500,0);
+//    glTexCoord2f(10,10);
+//    glVertex3f(500,-200,0);
+//    glTexCoord2f(10,0);
+//    glVertex3f(-500,-200,0);
+//    glEnd();
+//    glDisable(GL_TEXTURE_2D);
+
+    //  绘制球、正方体、圆柱体
+    Sphere.Render(textureSphere);
+    Cube.Render(textureWall);
+    Cylinder.Render(textureFun);
+
     glutSwapBuffers();
 }
 
 void Controller()
 {
-    alpha +=2.f;
-    if(alpha>360) alpha-=360;
 
     glutPostRedisplay();
 }
@@ -118,7 +144,7 @@ void reshape(int width,int height)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
-    gluPerspective(60,(GLfloat )width/(GLfloat)height,1,200);
+    gluPerspective(60,(GLfloat )width/(GLfloat)height,1,2000);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -129,43 +155,78 @@ void keyBoard(unsigned char key,int x,int y)
 {
     std::cout<<key<<std::endl;
     switch (key) {
+        case 'w':
         case 'W':
             for(int i=0;i<3;i++) Position[i]+=step*Header[i];
             break;
+        case 's':
         case 'S':
             for(int i=0;i<3;i++) Position[i]-=step*Header[i];
             break;
+        case 'a':
         case 'A':
             {
-                Angle +=AngleStep;
-                float radius = sqrt(Position[0]*Position[0]+Position[2]*Position[2]);
-                Position[0]=radius*cos(Angle/180*M_PI);
-                Position[2]=radius*sin(Angle/180*M_PI);
+                Position[0]-=step;
                 break;
             }
+        case 'd':
         case 'D':
             {
-                Angle -=AngleStep;
-                float radius = sqrt(Position[0]*Position[0]+Position[2]*Position[2]);
-                Position[0]=radius*cos(Angle/180*M_PI);
-                Position[2]=radius*sin(Angle/180*M_PI);
+               Position[0]+=step;
                 break;
             }
+        case 'q':
+        case 'Q':
+            Angle -=AngleStep;
+            RotatedLookAt(Angle);
+            break;
+        case 'e':
+        case 'E':
+            Angle += AngleStep;
+            RotatedLookAt(Angle);
+            break;
+        case 'z':
+        case 'Z':
+            Header[1] -= 0.01;
+            break;
+        case 'C':
+        case 'c':
+            Header[1] += 0.01;
+            break;
+        case 'X':
+        case 'x':
+            Position[1] -=step;
+            break;
+        case ' ':
+            Position[1]+=step;
 
     }
     glutPostRedisplay();
 }
-
+void init()
+{
+    textureID1 = LoadTexture("timg.jpg");
+    textureGround = LoadTexture("pattern.jpeg");
+    textureSphere = LoadTexture("Emjo.png");
+    textureSky = LoadTexture("sky.png");
+    textureWall = LoadTexture("wall.png");
+    textureFun = LoadTexture("FUN.png");
+    Sphere.InitData(30);
+    Sphere.SetPos(cgPoint3D(10.f,20.f,30.f));
+    Cube.InitData(30);
+    Cube.SetPos(cgPoint3D(50,50,30));
+    Cylinder.InitData(10,20);
+    Cylinder.SetPos(cgPoint3D(-10,-10,-10));
+}
 int main(int argc,char** argv)
 {
     glutInit(&argc,argv);
     glutInitWindowPosition(200,200);
     glutInitWindowSize(800,800);
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
     glutCreateWindow("Class3-CameraAndPattern");
     glEnable(GL_DEPTH_TEST);
-
-    textureID = LoadTexture("timg.jpg");
+    init();
 
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
