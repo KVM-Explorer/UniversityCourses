@@ -63,6 +63,7 @@ void cgSphere::InitData(float r)
 //			rect.Pt[2] = cgPoint3D(x12,y12,z2);
 //            rect.Pt[3] = cgPoint3D(x11,y11,z2);
             RectArray.push_back(rect);
+            Normal.push_back(rect);
 
             F f;
             f.Pt[0] = cgPoint3D(alpha/2.f/M_PI,beta/M_PI);
@@ -80,6 +81,7 @@ void cgSphere::Render(GLuint texture)
 {
 	vector<Rect>::iterator it1 = RectArray.begin();
     vector<F>::iterator it2 = FArray.begin();
+    vector<Rect>::iterator itn = Normal.begin();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -101,19 +103,19 @@ void cgSphere::Render(GLuint texture)
         for(int i=0;i<4;i++)
         {
             glTexCoord2f((*it2).Pt[0].s,(*it2).Pt[0].t);
-            glNormal3f(0,1,0);
+//            glNormal3f((*itn).Pt[0].x,(*itn).Pt[0].y,(*itn).Pt[0].z);
             glVertex3f((*it1).Pt[0].x,(*it1).Pt[0].y,(*it1).Pt[0].z);
 
             glTexCoord2f((*it2).Pt[1].s,(*it2).Pt[1].t);
-            glNormal3f(0,1,0);
+//            glNormal3f((*itn).Pt[1].x,(*itn).Pt[1].y,(*itn).Pt[1].z);
             glVertex3f((*it1).Pt[1].x,(*it1).Pt[1].y,(*it1).Pt[1].z);
 
             glTexCoord2f((*it2).Pt[2].s,(*it2).Pt[2].t);
-            glNormal3f(0,1,0);
+//            glNormal3f((*itn).Pt[2].x,(*itn).Pt[2].y,(*itn).Pt[2].z);
             glVertex3f((*it1).Pt[2].x,(*it1).Pt[2].y,(*it1).Pt[2].z);
 
             glTexCoord2f((*it2).Pt[3].s,(*it2).Pt[3].t);
-            glNormal3f(0,1,0);
+//            glNormal3f((*itn).Pt[3].x,(*itn).Pt[3].y,(*itn).Pt[3].z);
             glVertex3f((*it1).Pt[3].x,(*it1).Pt[3].y,(*it1).Pt[3].z);
 
         }

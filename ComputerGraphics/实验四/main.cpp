@@ -5,6 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include "cgSphere.h"
 #include "cgCylinder.h"
+#include "cgCube.h"
 #include <GL/glu.h>
 #include <GL/glut.h>
 using namespace std;
@@ -28,8 +29,8 @@ GLuint textureSky;
 GLuint textureWall;
 GLuint textureFun;
 cgSphere Sphere;
-//cgCube Cube;
-//cgCylinder Cylinder;
+cgCube Cube;
+cgCylinder Cylinder;
 //cgCube LightBox;
 
 
@@ -166,7 +167,7 @@ void display()
 
     Sphere.Render(textureFun);
     Cube.Render(textureWall);
-
+    Cylinder.Render(textureSky);
     glutSwapBuffers();
 }
 void Controller()
@@ -218,14 +219,31 @@ void keyboard(unsigned char key, int x, int y)
             //pos[1] += .30f;
             light_position[1] += 1.0;
             break;
+        case 'j':
+        case 'J':
+            // 光源左
+            light_position[0]-=1.0;
+            break;
 
+        case ' l':
+        case 'L':
+            // 光源右
+            light_position[0]+=1.0;
+            break;
+        case 'i':
+        case 'I':
+            light_position[2]-=1.0;
+            break;
+        case 'k':
+        case 'K':
+            light_position[2]+=1.0;
+            break;
         case 'X':
         case 'x':
             //光源
             //pos[1] -= .30f;
             light_position[1] -= 1.0;
             break;
-
         case 'N':   //蓝
         case 'n':
             light_color[0] = 0.0;
@@ -238,44 +256,19 @@ void keyboard(unsigned char key, int x, int y)
             light_color[1] = 1.0;
             light_color[2] = 0.0;
             break;
-        case 'i'://原来颜色
+        case 'o'://原来颜色
             light_color[0] = 1.0;
             light_color[1] = 1.0;
             light_color[2] = 1.0;
             break;
-    }
-
-    glutPostRedisplay();
-}
-
-void SpecialKey(GLint key,GLint x,GLint y)
-{
-    switch (key)
-    {
-        case GLUT_KEY_UP:
-            for (int i=0; i<3; i++)
-                pos[i] += step*headdir[i];
-            break;
-
-        case GLUT_KEY_DOWN:
-            for (int i=0; i<3; i++)
-                pos[i] -= step*headdir[i];
-            break;
-
-        case GLUT_KEY_LEFT:
-            for (int i=0; i<4; i++)
-                pos[i] -= step*rightdir[i];
-            break;
-
-
-        case GLUT_KEY_RIGHT:
-            for (int i=0; i<4; i++)
-                pos[i] += step*rightdir[i];
+        case ' ':
+            pos[1]+=step;
             break;
     }
 
     glutPostRedisplay();
 }
+
 void init()
 {
     glClearColor(0.5, 1.0, 1.0, 1.0);
@@ -288,11 +281,11 @@ void init()
     textureFun = LoadTexture("rose.png");
     Sphere.InitData(10);
     Sphere.SetPos(cgPoint3D(0,2,0),20 ,0);
-    Cube.InitData(30);
-    Cube.SetPos(cgPoint3D(50,50,30));
-    Cylinder.InitData(10,20);
-    Cylinder.SetPos(cgPoint3D(-10,-10,-10));
-    LightBox.InitData(5);
+    Cube.InitData(4);
+    Cube.SetPos(cgPoint3D(10,0,-5));
+    Cylinder.InitData(3,6);
+    Cylinder.SetPos(cgPoint3D(-10,0,-5));
+//    LightBox.InitData(5);
 }
 int main(int argc,char** argv)
 {

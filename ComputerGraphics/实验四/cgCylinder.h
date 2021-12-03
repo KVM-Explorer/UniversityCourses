@@ -22,5 +22,6 @@ private:
 	cgPoint3D ptPos;
 	vector<cgTriangle> vTris;
     vector<cgTriangle> sTexture;
+    vector<cgTriangle> Normal;
 };
 

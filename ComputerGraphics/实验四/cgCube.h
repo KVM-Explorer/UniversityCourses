@@ -21,5 +21,6 @@ private:
 	float fLength;
 	cgPoint3D ptPos;
 	vector<Plane> Planes;
+    vector<Plane> Normal;
 };
 

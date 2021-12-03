@@ -28,5 +28,6 @@ private:
 	cgPoint3D ptPos; 
 	vector<Rect> RectArray;
     vector<F> FArray;
+    vector<Rect> Normal;
 };
 

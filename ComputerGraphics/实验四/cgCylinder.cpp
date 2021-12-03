@@ -43,15 +43,19 @@ void cgCylinder::InitData(float r,float h)
         float a01 = alpha/M_PI/2.f;
         float a02 = (alpha+dalpha)/M_PI/2.f;
 
-        std::cout<<fR<<std::endl;
         // 构建圆环
 		cgTriangle tri; cgTriangle texture;
+        cgTriangle normal;
 		tri.Pt[0] = cgPoint3D(x01,y01,z0);
 		tri.Pt[1] = cgPoint3D(x02,y02,z0);
 		tri.Pt[2] = cgPoint3D(x01,y01,z1);
         texture.Pt[0] = cgPoint3D(a01,pd);
         texture.Pt[1] = cgPoint3D(a02,pd);
         texture.Pt[2] = cgPoint3D(a01,ph);
+        normal.Pt[0] = cgPoint3D(x01,y01,z0);
+        normal.Pt[1] = cgPoint3D(x02,y02,z0);
+        normal.Pt[2] = cgPoint3D(x01,y01,z1);
+        Normal.push_back(normal);
         sTexture.push_back(texture);
 		vTris.push_back(tri);
 
@@ -61,6 +65,10 @@ void cgCylinder::InitData(float r,float h)
         texture.Pt[0] = cgPoint3D(a02,pd);
         texture.Pt[1] = cgPoint3D(a02,ph);
         texture.Pt[2] = cgPoint3D(a01,ph);
+        normal.Pt[0] = cgPoint3D(x02,y02,z0);
+        normal.Pt[1] = cgPoint3D(x02,y02,z1);
+        normal.Pt[2] = cgPoint3D(x01,y01,z1);
+        Normal.push_back(normal);
         sTexture.push_back(texture);
 		vTris.push_back(tri);
 
@@ -71,6 +79,7 @@ void cgCylinder::InitData(float r,float h)
         texture.Pt[0] = cgPoint3D(a01,ph);
         texture.Pt[1] =cgPoint3D(a02,ph);
         texture.Pt[2] = cgPoint3D((a01+a02)/2,1);
+        Normal.push_back(tri);
         sTexture.push_back(texture);
 		vTris.push_back(tri);
 
@@ -81,6 +90,7 @@ void cgCylinder::InitData(float r,float h)
         texture.Pt[0] = cgPoint3D(a01,pd);
         texture.Pt[1] =cgPoint3D(a02,pd);
         texture.Pt[2] = cgPoint3D((a01+a02)/2,0);
+        Normal.push_back(tri);
         sTexture.push_back(texture);
 		vTris.push_back(tri);
 
@@ -93,19 +103,20 @@ void cgCylinder::Render(GLuint texture)
 {
 	vector<cgTriangle>::iterator it1 = vTris.begin();
     vector<cgTriangle>::iterator it2 = sTexture.begin();
+    vector<cgTriangle>::iterator itn = Normal.begin();
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 
 	glTranslatef(ptPos.x,ptPos.y,ptPos.z);
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D,texture);
-	for(; it1 != vTris.end(); it1++,it2++)
+	for(; it1 != vTris.end(); it1++,it2++,itn++)
 	{
         glBegin(GL_TRIANGLES);
         for(int i=0;i<3;i++)
         {
            glTexCoord2f((*it2).Pt[i].s,(*it2).Pt[i].t);
-            glNormal3f(0,1,0);
+           glNormal3f((*itn).Pt[i].x,(*itn).Pt[i].y,(*itn).Pt[i].z);
            glVertex3f((*it1).Pt[i].x,(*it1).Pt[i].y,(*it1).Pt[i].z);
         }
         glEnd();
